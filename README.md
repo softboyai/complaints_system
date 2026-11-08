@@ -1,4 +1,3 @@
-# MKU Students' Complaints and Feedback Management System
 # MKU Complaints and Feedback System
 
 A web application for Mount Kigali University students to submit and track complaints and feedback. Staff manage issues assigned to their departments; administrators manage users, departments, complaints, and reports.
