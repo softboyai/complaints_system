@@ -1,0 +1,9 @@
+/vendor/
+/logs/*.log
+/backups/*
+!/backups/.gitkeep
+/uploads/*
+!/uploads/.htaccess
+!/uploads/.gitkeep
+Thumbs.db
+.DS_Store

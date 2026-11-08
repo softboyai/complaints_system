@@ -1,0 +1,12 @@
+{
+    "name": "mku/complaints-system",
+    "description": "Mount Kigali University Students Complaints and Feedback Management System",
+    "type": "project",
+    "require": {
+        "php": ">=8.0",
+        "dompdf/dompdf": "^3.0"
+    },
+    "config": {
+        "optimize-autoloader": true
+    }
+}

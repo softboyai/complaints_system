@@ -1,0 +1,7 @@
+# Block all direct web access to uploaded files.
+# Files are served only through download.php which checks permissions.
+Order deny,allow
+Deny from all
+
+# Disable PHP execution in this folder.
+php_flag engine off
