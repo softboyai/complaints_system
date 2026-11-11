@@ -7,39 +7,27 @@ require_once dirname(__DIR__) . '/config/config.php';
 // Tracking ID Generation
 // ------------------------------------------------------------
 
-// Generates a unique complaint tracking ID like MKU-2026-00045.
-// Uses a transaction to prevent race conditions.
+// Generates a unique complaint tracking ID inside the caller's transaction.
 function generate_tracking_id(PDO $pdo): string {
     $year = date('Y');
     $prefix = "MKU-{$year}-";
 
-    $pdo->beginTransaction();
-    try {
-        // Lock the table for the sequence check.
-        $stmt = $pdo->prepare(
-            "SELECT tracking_id FROM complaints
-             WHERE tracking_id LIKE ?
-             ORDER BY tracking_id DESC LIMIT 1
-             FOR UPDATE"
-        );
-        $stmt->execute([$prefix . '%']);
-        $last = $stmt->fetchColumn();
+    $stmt = $pdo->prepare(
+        "SELECT tracking_id FROM complaints
+         WHERE tracking_id LIKE ?
+         ORDER BY tracking_id DESC LIMIT 1
+         FOR UPDATE"
+    );
+    $stmt->execute([$prefix . '%']);
+    $last = $stmt->fetchColumn();
 
-        if ($last) {
-            $seq = (int) substr($last, strlen($prefix));
-            $seq++;
-        } else {
-            $seq = 1;
-        }
-
-        $tracking_id = $prefix . str_pad($seq, 5, '0', STR_PAD_LEFT);
-        $pdo->commit();
-        return $tracking_id;
-    } catch (Throwable $e) {
-        $pdo->rollBack();
-        log_error('generate_tracking_id failed: ' . $e->getMessage());
-        throw $e;
+    if ($last) {
+        $seq = (int) substr($last, strlen($prefix)) + 1;
+    } else {
+        $seq = 1;
     }
+
+    return $prefix . str_pad($seq, 5, '0', STR_PAD_LEFT);
 }
 
 // ------------------------------------------------------------
