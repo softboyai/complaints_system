@@ -120,30 +120,38 @@ These tests verify that PHP and MySQL work correctly together.
 
 ### TC-I-02: Complaint submission creates tracking ID and history row
 1. Log in as a student.
-2. Submit a complaint with all required fields.
-- **Expected:** A row in `complaints` with a unique tracking_id (format MKU-YYYY-#####), status = 'Submitted'. A corresponding row in `complaint_status_history` with new_status = 'Submitted'.
+2. Submit a complaint with all required fields and select a department with an active staff account.
+- **Expected:** A row in `complaints` with a unique tracking_id (format MKU-YYYY-#####), the selected `department_id`, and status = 'Submitted'. A corresponding row in `complaint_status_history` with new_status = 'Submitted', plus a notification for the selected department's active staff.
 - **Result:** ___________
 
-### TC-I-03: Status change updates complaints and inserts history
+### TC-I-03: Department staff can see student-routed complaint
+1. Log in as a student and submit a complaint to the Academics department.
+2. Log in as staff assigned to Academics and open the Complaints page.
+3. Open the complaint and change its status or add a response.
+4. Log in as admin and locate the same complaint.
+- **Expected:** Academics staff can view and update the complaint; staff from other departments cannot access it; admin can view it regardless of department.
+- **Result:** ___________
+
+### TC-I-04: Status change updates complaints and inserts history
 1. Log in as staff.
 2. Open an assigned complaint and change status to "In Progress" with a note.
 - **Expected:** `complaints.status` updated. A new row in `complaint_status_history` with old_status and new_status. A row in `notifications` for the student.
 - **Result:** ___________
 
-### TC-I-04: Staff reply creates response and notification
+### TC-I-05: Staff reply creates response and notification
 1. Log in as staff.
 2. Submit a public reply on a complaint.
 - **Expected:** A row in `responses` with is_internal = 0. A row in `notifications` for the student.
 - **Result:** ___________
 
-### TC-I-05: Password reset token is hashed and expired after use
+### TC-I-06: Password reset token is hashed and expired after use
 1. Request a password reset for a student account.
 2. Use the link to set a new password.
 3. Try to use the same link again.
 - **Expected:** First use succeeds and redirects to login. Second use shows "invalid or already used" message. `password_resets.used = 1` in DB.
 - **Result:** ___________
 
-### TC-I-06: Feedback inserts correctly
+### TC-I-07: Feedback inserts correctly
 1. Log in as a student.
 2. Submit feedback with type = Course, rating = 4, comment = "Good course".
 - **Expected:** A row in `feedback` with correct student_id, type, rating and comment.
@@ -162,7 +170,7 @@ End-to-end tests of the complete system from submission to resolution.
 4. Note the tracking ID shown after submission.
 5. Log out. Log in as admin.
 6. Go to All Complaints, find the complaint by tracking ID.
-7. Assign it to the Academics department.
+7. Confirm its department is Academics.
 8. Log out. Log in as staff (Academics).
 9. Go to Complaints, find the complaint.
 10. Update status to "In Progress" with note "Investigating".
@@ -258,7 +266,7 @@ A checklist for three types of users.
 |---|---|---|
 | 1 | Log in as admin | |
 | 2 | View the dashboard with charts and stat cards | |
-| 3 | Find a newly submitted complaint and assign it to a department | |
+| 3 | View a newly submitted complaint routed by the student | |
 | 4 | View all complaints across all departments | |
 | 5 | Add a new staff user with department and role | |
 | 6 | Disable and re-enable a user account | |

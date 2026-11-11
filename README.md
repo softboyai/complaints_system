@@ -70,15 +70,15 @@ These are sample accounts, not production credentials. Reset or replace them bef
 
 ### Students
 
-Students register from **Create account** with their name, registration number, email, and faculty. Registration signs them in and opens their profile. From the student dashboard they can submit a complaint, optionally mark it anonymous, attach supporting files, and track its updates. They can reply to public staff responses, rate resolved complaints, download receipts, and submit course, lecturer, service, or facility feedback.
+Students register from **Create account** with their name, registration number, email, and faculty. Registration signs them in and opens their profile. When submitting a complaint, students choose both a category and the department that should handle it. The complaint appears in that department's staff queue and remains visible to administrators across the system. Students can optionally submit anonymously, attach supporting files, track updates, reply to public staff responses, rate resolved complaints, download receipts, and submit course, lecturer, service, or facility feedback.
 
 ### Staff
 
-An administrator creates staff accounts and assigns a department. Staff sign in to see complaints routed to that department. They can update the complaint status, add a public reply or an internal note, and view reports. Students receive in-app notifications for status updates and public replies.
+An administrator creates staff accounts and assigns a department. Staff sign in to see complaints students routed to that department. They can update the complaint status, add a public reply or an internal note, and view reports. Active staff in the selected department receive an in-app notification when a complaint arrives. Students receive in-app notifications for status updates and public replies.
 
 ### Administrators
 
-Administrators can create staff/admin accounts in **Users**, enable or disable accounts, manage departments, assign complaints to departments, review all complaint activity, and generate reports or database backups. Students should use self-registration so their registration number and faculty are collected.
+Administrators can create staff/admin accounts in **Users**, enable or disable accounts, manage departments, review all complaints across departments, reassign complaints when needed, and generate reports or database backups. Students should use self-registration so their registration number and faculty are collected.
 
 ## Change Names, Logo, and Colors
 

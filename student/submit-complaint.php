@@ -10,9 +10,9 @@ $pdo  = get_db();
 $user = get_logged_in_user();
 
 $errors = [];
-$vals   = ['title' => '', 'category' => '', 'description' => '', 'priority' => 'Low', 'is_anonymous' => 0];
+$vals   = ['title' => '', 'category' => '', 'department_id' => 0, 'description' => '', 'priority' => 'Low', 'is_anonymous' => 0];
 
-// Load departments for optional routing hint (admin assigns, not student).
+// Let students route complaints to the team that should handle them.
 $departments = $pdo->query('SELECT id, name FROM departments ORDER BY name')->fetchAll();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -20,6 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $vals['title']        = trim($_POST['title']       ?? '');
     $vals['category']     = trim($_POST['category']    ?? '');
+    $vals['department_id'] = (int)($_POST['department_id'] ?? 0);
     $vals['description']  = trim($_POST['description'] ?? '');
     $vals['priority']     = trim($_POST['priority']    ?? 'Low');
     $vals['is_anonymous'] = isset($_POST['is_anonymous']) ? 1 : 0;
@@ -34,6 +35,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!$r_cat['valid'])   $errors['category']    = $r_cat['error'];
     if (!$r_desc['valid'])  $errors['description'] = $r_desc['error'];
     if (!$r_prio['valid'])  $errors['priority']    = $r_prio['error'];
+
+    $valid_department_ids = array_map('intval', array_column($departments, 'id'));
+    if ($departments && $vals['department_id'] === 0) {
+      $errors['department_id'] = 'Select the department that should handle this complaint.';
+    } elseif ($vals['department_id'] > 0 && !in_array($vals['department_id'], $valid_department_ids, true)) {
+      $errors['department_id'] = 'Select a valid department.';
+    }
 
     // Validate category and priority values against allowed enums.
     $valid_cats  = complaint_categories();
@@ -75,8 +83,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $stmt = $pdo->prepare(
                 'INSERT INTO complaints
-                 (tracking_id, student_id, is_anonymous, category, title, description, priority, status)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, \'Submitted\')'
+                  (tracking_id, student_id, is_anonymous, category, title, description, priority, department_id, status)
+                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, \'Submitted\')'
             );
             $stmt->execute([
                 $tracking_id,
@@ -86,6 +94,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $vals['title'],
                 $vals['description'],
                 $vals['priority'],
+                $vals['department_id'] ?: null,
             ]);
             $complaint_id = (int) $pdo->lastInsertId();
 
@@ -123,6 +132,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     "/admin/complaints.php?id={$complaint_id}"
                 );
             }
+
+              if ($vals['department_id'] > 0) {
+                $staff_stmt = $pdo->prepare(
+                  'SELECT id FROM users WHERE role = \'staff\' AND department_id = ? AND is_active = 1'
+                );
+                $staff_stmt->execute([$vals['department_id']]);
+                foreach ($staff_stmt->fetchAll(PDO::FETCH_COLUMN) as $staff_id) {
+                  create_notification($pdo, (int) $staff_id,
+                    "A new complaint has been submitted to your department: {$tracking_id}.",
+                    "/staff/complaint-details.php?id={$complaint_id}"
+                  );
+                }
+              }
 
             // Notify student.
             create_notification($pdo, $user['id'],
@@ -200,6 +222,24 @@ include dirname(__DIR__) . '/includes/header.php';
       </div>
 
       <div class="form-group">
+        <label class="form-label" for="department_id">
+          Send to department<?= $departments ? ' <span class="form-label__required" aria-hidden="true">*</span>' : '' ?>
+        </label>
+        <select id="department_id" name="department_id" class="form-input form-select <?= isset($errors['department_id']) ? 'form-input--error' : '' ?>"
+                <?= $departments ? 'required aria-required="true"' : '' ?> aria-describedby="department-error department-hint">
+          <option value="0">Select a department</option>
+          <?php foreach ($departments as $department): ?>
+            <option value="<?= (int) $department['id'] ?>" <?= (int) $vals['department_id'] === (int) $department['id'] ? 'selected' : '' ?>><?= e($department['name']) ?></option>
+          <?php endforeach; ?>
+        </select>
+        <span class="form-hint" id="department-hint">
+          <?= $departments ? 'The selected department staff will receive this complaint. Administrators can still see all complaints.' : 'No departments are configured yet; an administrator can assign this complaint later.' ?>
+        </span>
+        <span class="form-error" id="department-error" role="alert"><?= e($errors['department_id'] ?? '') ?></span>
+      </div>
+    </div>
+
+    <div class="form-group">
         <label class="form-label">
           Priority <span class="form-label__required" aria-hidden="true">*</span>
         </label>
@@ -212,7 +252,6 @@ include dirname(__DIR__) . '/includes/header.php';
           <?php endforeach; ?>
         </div>
         <span class="form-error" id="priority-error" role="alert"><?= e($errors['priority'] ?? '') ?></span>
-      </div>
     </div>
 
     <div class="form-group">

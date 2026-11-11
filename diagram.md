@@ -89,15 +89,16 @@ sequenceDiagram
     actor Admin
     actor Staff
 
-    Student->>App: Submit complaint and optional attachments
-    App->>DB: Save complaint, tracking ID, and initial status
+    Student->>App: Submit complaint, choose department, add optional attachments
+    App->>DB: Save complaint, department, tracking ID, and initial status
+    App->>DB: Notify active staff in selected department and administrators
     App-->>Student: Show confirmation and tracking ID
-    Admin->>App: Assign complaint to a department
-    App->>DB: Save department and status history
     Staff->>App: Review complaint and update status or reply
     App->>DB: Save status history and response
     App->>DB: Create student notification for public update
     Student->>App: View update, reply, or rate resolution
+    Admin->>App: Review all complaints or reassign department
+    App->>DB: Save reassignment
 ```
 
 ## Entity Relationships
