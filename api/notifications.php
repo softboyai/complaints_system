@@ -48,6 +48,9 @@ $unread = 0;
 foreach ($items as &$n) {
     $n['id']      = (int) $n['id'];
     $n['is_read'] = (bool) $n['is_read'];
+    if (is_string($n['link']) && str_starts_with($n['link'], '/') && !str_starts_with($n['link'], '//')) {
+        $n['link'] = rtrim(APP_URL, '/') . $n['link'];
+    }
     if (!$n['is_read']) $unread++;
 }
 
